@@ -1,21 +1,41 @@
-FROM bitnami/node:9 as builder
-ENV NODE_ENV="production"
+#
+# Redis Dockerfile
+#
+# https://github.com/dockerfile/redis
+#
+# Pull base image.
+FROM dockerfile/ubuntu
 
-# Copy app's source code to the /app directory
-COPY . /app
 
-# The application's directory will be the working directory
-WORKDIR /app
+#variables
+ENV confdir /home/kpbs/repos/test/redis.conf
 
-# Install Node.js dependencies defined in '/app/packages.json'
-RUN npm install
 
-FROM bitnami/node:9-prod
-ENV NODE_ENV="production"
-COPY --from=builder /app /app
-WORKDIR /app
-ENV PORT 5000
-EXPOSE 5000
+# Install Redis.
+RUN \
+  cd /tmp && \
+  wget http://download.redis.io/redis-stable.tar.gz && \
+  tar xvzf redis-stable.tar.gz && \
+  cd redis-stable && \
+  make && \
+  make install && \
+  cp -f src/redis-sentinel /usr/local/bin && \
+  mkdir -p /etc/redis && \
+  cp -f *.conf /etc/redis && \
+  rm -rf /tmp/redis-stable* && \
+  sed -i 's/^\(bind .*\)$/# \1/' /etc/redis/redis.conf && \
+  sed -i 's/^\(daemonize .*\)$/# \1/' /etc/redis/redis.conf && \
+  sed -i 's/^\(dir .*\)$/# \1\ndir \/data/' /etc/redis/redis.conf && \
+  sed -i 's/^\(logfile .*\)$/# \1/' /etc/redis/redis.conf
 
-# Start the application
-CMD ["npm", "start"]
+# Define mountable directories.
+VOLUME ["/data"]
+
+# Define working directory.
+WORKDIR /data
+
+# Define default command.
+CMD ["redis-server", "/etc/redis/redis.conf"]
+
+# Expose ports.
+EXPOSE 6379
