@@ -4,7 +4,7 @@
 # https://github.com/dockerfile/redis
 #
 # Pull base image.
-FROM dockerfile/ubuntu
+FROM ubuntu:18.04
 
 
 #variables
@@ -14,6 +14,7 @@ ENV confdir /home/kpbs/repos/test/redis.conf
 # Install Redis.
 RUN \
   cd /tmp && \
+  apt install wget \
   wget http://download.redis.io/redis-stable.tar.gz && \
   tar xvzf redis-stable.tar.gz && \
   cd redis-stable && \

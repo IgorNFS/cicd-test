@@ -1,9 +1,9 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-name: hello
+name: redis-db
 labels:
-  app: hello
+  app: redis-db
 spec:
 strategy:
   type: Recreate
@@ -14,25 +14,25 @@ template:
       tier: hello
   spec:
     containers:
-    - name: hello
-      image: igornfs/hello:latest
+    - name: redis
+      image: redis:latest
       imagePullPolicy: Always
       ports:
-      - containerPort: 5000
-        name: hello
+      - containerPort: 6379
+        name: redis
 
 ---
 apiVersion: v1
 kind: Service
 metadata:
-name: hello
+name: lb
 labels:
-  app: hello
+  app: lb
 spec:
 ports:
   - port: 5000
     targetPort: 5000
 selector:
-  app: hello
-  tier: hello
+  app: lb
+  tier: lb
 type: LoadBalancer
